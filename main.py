@@ -1,13 +1,15 @@
 import sympy
-from sympy.abc import x, alpha
+from sympy.abc import x
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import math
 
 x0 = -1
+y0 = 2
 x1 = 1
+y1 = 4
 delta = 100
-count_iterations = 5
+count_iterations = 3
 
 
 def f(var_y_derivative, var_y, var_x):
@@ -15,28 +17,33 @@ def f(var_y_derivative, var_y, var_x):
 
 
 def exact(var_x):
-    return 1 / 4 * var_x - math.sin(2 * var_x) / (4 * math.sin(2))
+    return 3 * math.cos(2 * var_x) / math.cos(2) + 3 * math.sin(2 * var_x) / (4 * math.sin(2)) + 1 / 4 * var_x
 
 
 if __name__ == '__main__':
     x_all_values = [i / delta for i in range(x0 * delta, x1 * delta + 1)]
     fig, ax = plt.subplots()
     ax.plot(x_all_values, list(map(exact, x_all_values)), label="Точное решение")
-    y = 0
+    y = (y1 - y0) / (x1 - x0) * (x - x0) + y0
     for i in range(1, count_iterations + 1):
-        w = (x - x0) * (x - x1) * x ** i
-        y += alpha * w
+        phi_system = list()
+        y += sympy.Symbol(f'alpha{i}') * (x - x0) ** i * (x1 - x)
         y1 = y.diff(x)
-        phi = sympy.integrate(f(y1, y, x), (x, x0, x1))
-        phi1 = phi.diff(alpha)
-        alp = sympy.solve(phi1, alpha)[0]
-        y = y.subs(alpha, alp)
-        print(f"{i}: {y}")
-        ax.plot(x_all_values, list(map(lambda _x: y.subs(x, _x), x_all_values)), label=f"y{i}")
+        phi_alpha_i = sympy.integrate(f(y1, y, x), (x, x0, x1))
+        for j in range(1, i + 1):
+            phi_system.append(sympy.Equality(phi_alpha_i.diff(sympy.Symbol(f'alpha{j}')), 0))
+        alphas = sympy.solve(phi_system)
+        print(alphas)
+        y_print = y
+        for j in range(1, i + 1):
+            symbol = sympy.Symbol(f'alpha{j}')
+            y_print = y_print.subs(symbol, alphas[symbol])
+        print(f"y{i} = {y_print}")
+        ax.plot(x_all_values, list(map(lambda _x: y_print.subs(x, _x), x_all_values)), label=f"y{i}")
 
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(10 / delta))
+    # ax.xaxis.set_major_locator(ticker.MultipleLocator(10 / delta))
     # ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.01))
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(10 / delta))
+    # ax.yaxis.set_major_locator(ticker.MultipleLocator(10 / delta))
     # ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.01))
     # ax.grid(which='major', color='gray')
     ax.grid(which='major', color='gray', linestyle=':')
