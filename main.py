@@ -1,7 +1,6 @@
 import sympy
 from sympy.abc import x
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import math
 
 x0 = -1
@@ -22,6 +21,7 @@ def exact(var_x):
 
 if __name__ == '__main__':
     x_all_values = [i / delta for i in range(x0 * delta, x1 * delta + 1)]
+    styles = ["--", "-.", ":"]
     fig, ax = plt.subplots()
     ax.plot(x_all_values, list(map(exact, x_all_values)), label="Точное решение")
     y = (y1 - y0) / (x1 - x0) * (x - x0) + y0
@@ -39,17 +39,13 @@ if __name__ == '__main__':
             symbol = sympy.Symbol(f'alpha{j}')
             y_print = y_print.subs(symbol, alphas[symbol])
         print(f"y{i} = {y_print}")
-        ax.plot(x_all_values, list(map(lambda _x: y_print.subs(x, _x), x_all_values)), label=f"y{i}")
-
-    # ax.xaxis.set_major_locator(ticker.MultipleLocator(10 / delta))
-    # ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.01))
-    # ax.yaxis.set_major_locator(ticker.MultipleLocator(10 / delta))
-    # ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.01))
-    # ax.grid(which='major', color='gray')
+        if i == 3:
+            ax.plot(x_all_values, list(map(lambda _x: y_print.subs(x, _x), x_all_values)), styles[i - 1], label=f"y{i}", linewidth=3)
+        else:
+            ax.plot(x_all_values, list(map(lambda _x: y_print.subs(x, _x), x_all_values)), styles[i - 1], label=f"y{i}")
     ax.grid(which='major', color='gray', linestyle=':')
     ax.legend()
     plt.xlim([x0, x1])
-    # plt.ylim([-1, 1])
     plt.ylabel("y", fontsize=14)
     plt.xlabel("x", fontsize=14)
     plt.savefig("chart.svg")
